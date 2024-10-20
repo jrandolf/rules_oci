@@ -23,6 +23,7 @@ fi
 
 TAGS=()
 ARGS=()
+PRINT_DIGEST=false
 
 while (( $# > 0 )); do
   case $1 in
@@ -43,6 +44,9 @@ while (( $# > 0 )); do
     (--repository=*)
       REPOSITORY="${1#--repository=}"
       shift;;
+    (--print-digest)
+      PRINT_DIGEST=true
+      shift;;
     (*) 
       ARGS+=( "$1" )
       shift;;
@@ -50,6 +54,11 @@ while (( $# > 0 )); do
 done
 
 DIGEST=$("${JQ}" -r '.manifests[0].digest' "${IMAGE_DIR}/index.json")
+
+if ${PRINT_DIGEST}; then
+  echo $DIGEST
+  exit 0
+fi
 
 REFS=$(mktemp)
 "${CRANE}" push ${VERBOSE} "${IMAGE_DIR}" "${REPOSITORY}@${DIGEST}" "${ARGS[@]+"${ARGS[@]}"}" --image-refs "${REFS}"
